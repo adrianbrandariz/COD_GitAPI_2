@@ -2,6 +2,7 @@ package com.mycompany.cod_api2;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -9,11 +10,14 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.RemoteAddCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.CredentialsProvider;
+import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.kohsuke.github.GHCreateRepositoryBuilder;
 import org.kohsuke.github.GitHub;
@@ -70,7 +74,7 @@ public class MetodosGitHub {
             Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Método que permite clonar un repositorio.
      *
@@ -91,7 +95,7 @@ public class MetodosGitHub {
             Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Método que permite inicializar un repositorio.
      */
@@ -100,9 +104,10 @@ public class MetodosGitHub {
         InitCommand ini = new InitCommand();
         ini.setDirectory(new File(localPath + "/.git"));
     }
-    
+
     /**
      * Método con el que se puede realizar commits en los repositorios.
+     *
      * @throws org.eclipse.jgit.api.errors.GitAPIException
      */
     public void commit() throws GitAPIException {
@@ -124,6 +129,31 @@ public class MetodosGitHub {
             CommitCommand commit = git.commit();
             commit.setMessage(commitmensaje);
             commit.call();
+        } catch (IOException ex) {
+            Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Metodo que permite realizar push de los commits realizados.
+     *
+     * @throws URISyntaxException
+     * @throws GitAPIException
+     */
+    public void push() throws URISyntaxException, GitAPIException {
+        try {
+            localRepo = new FileRepository(localPath);
+            git = new Git(localRepo);
+            String pathRepo = JOptionPane.showInputDialog("Introduce la dirección del repositorio:");
+            // Add repositorio remoto:
+            RemoteAddCommand remoteAddCommand = git.remoteAdd();
+            remoteAddCommand.setName("origin");
+            remoteAddCommand.setUri(new URIish(pathRepo));
+            remoteAddCommand.call();
+            // Se hace el push al remoto:
+            PushCommand pushCommand = git.push();
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(name, password));
+            pushCommand.call();
         } catch (IOException ex) {
             Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
         }
