@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.kohsuke.github.GHCreateRepositoryBuilder;
@@ -96,5 +99,33 @@ public class MetodosGitHub {
         localPath = JOptionPane.showInputDialog("Introduce dirección del repositorio de Netbeans");
         InitCommand ini = new InitCommand();
         ini.setDirectory(new File(localPath + "/.git"));
+    }
+    
+    /**
+     * Método con el que se puede realizar commits en los repositorios.
+     * @throws org.eclipse.jgit.api.errors.GitAPIException
+     */
+    public void commit() throws GitAPIException {
+        try {
+            localPath = JOptionPane.showInputDialog("Introduce dirección del repositorio de Netbeans");
+            localPath = localPath + "/.git";
+            remotePath = JOptionPane.showInputDialog("Introduce dirección del repositorio en github");
+            commitmensaje = JOptionPane.showInputDialog("Introduce mensaje ha mostrar como commit");
+            FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
+            Repository repository = repositoryBuilder.setGitDir(new File(localPath))
+                    .readEnvironment() // scan environment GIT_* variables
+                    .findGitDir() // scan up the file system tree
+                    .setMustExist(true)
+                    .build();
+            git = new Git(localRepo);
+            AddCommand add = git.add();
+            add.addFilepattern(localPath);
+            add.call();
+            CommitCommand commit = git.commit();
+            commit.setMessage(commitmensaje);
+            commit.call();
+        } catch (IOException ex) {
+            Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
