@@ -1,10 +1,6 @@
 package com.mycompany.cod_api2;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import javax.swing.JOptionPane;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
 
 /**
  *
@@ -12,9 +8,12 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
  */
 public class Main {
 
-    public static void main(String[] args) throws IOException, JGitInternalException, GitAPIException, URISyntaxException {
+    public void main(String[] args) {
 
         MetodosGitHub met = new MetodosGitHub();
+
+        String repositoryName, uri, commitMessage, user, password;
+
         int op = Integer.parseInt(JOptionPane.showInputDialog("***MENU***\n"
                 + "1) Crear Repositorio\n"
                 + "2) Clonar Repositorio\n"
@@ -24,25 +23,31 @@ public class Main {
         do {
             switch (op) {
                 case 1:
-                    met.createRepository();
+                    repositoryName = JOptionPane.showInputDialog("Nombre del repositorio nuevo:");
+                    met.createRepository(repositoryName);
                     break;
                 case 2:
-                    met.cloneRepository();
+                    repositoryName = JOptionPane.showInputDialog("Nombre del repositorio nuevo:");
+                    uri = JOptionPane.showInputDialog("URL del repositorio remoto:");
+                    met.cloneRepository(uri, repositoryName);
                     break;
                 case 3:
-                    met.iniRepo();
+                    repositoryName = JOptionPane.showInputDialog("Nombre del repositorio nuevo:");
+                    commitMessage = JOptionPane.showInputDialog("Mensaje para el commit:");
+                    met.commit(repositoryName, commitMessage);
                     break;
                 case 4:
-                    met.commit();
+                    repositoryName = JOptionPane.showInputDialog("Inserte la ruta del proyecto:");
+                    uri = JOptionPane.showInputDialog("Inserte la url del repositorio remoto");
+                    user = JOptionPane.showInputDialog("Inserte usuario:");
+                    password = JOptionPane.showInputDialog("Inserte contraseña:");
+                    met.push(uri, repositoryName, user, password);
                     break;
                 case 5:
-                    met.push();
-                    break;
-                case 6:
                     System.exit(0);
                     break;
             }
-        } while (op < 6);
+        } while (op < 5);
     }
 
 }
