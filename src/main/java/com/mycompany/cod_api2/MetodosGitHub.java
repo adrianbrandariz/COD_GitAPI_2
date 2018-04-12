@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
@@ -86,5 +87,14 @@ public class MetodosGitHub {
         } catch (GitAPIException ex) {
             Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * Método que permite inicializar un repositorio.
+     */
+    public void iniRepo() {
+        localPath = JOptionPane.showInputDialog("Introduce dirección del repositorio de Netbeans");
+        InitCommand ini = new InitCommand();
+        ini.setDirectory(new File(localPath + "/.git"));
     }
 }
