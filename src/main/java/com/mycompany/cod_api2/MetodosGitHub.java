@@ -28,68 +28,33 @@ import org.kohsuke.github.GitHub;
  */
 public class MetodosGitHub {
 
-    private String localPath, remotePath, repositoryName, commitmensaje;
-    private Repository localRepo;
-    private Git git;
-    private CredentialsProvider cp;
-    private String name = "username";
-    private String password = "password";
-
-    /**
-     * Constructor por parámetros.
-     *
-     * @param localPath Direccion del directorio local.
-     * @param remotePath Direccion del directorio remoto.
-     */
-    public MetodosGitHub(String localPath, String remotePath) {
-        try {
-            this.localPath = localPath;
-            this.remotePath = remotePath;
-            this.localRepo = new FileRepository(localPath + "/.git");
-            cp = new UsernamePasswordCredentialsProvider(name, password);
-            git = new Git(localRepo);
-        } catch (IOException ex) {
-            Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    /**
-     * Constructor por defecto.
-     */
-    public MetodosGitHub() {
-
-    }
-
     /**
      * Método que permite crear un repositorio de forma remota.
+     *
+     * @param nombre Nombre que recibirá el nuevo repositorio.
      */
-    public void createRepository() {
+    public void createRepository(String nombre) {
         try {
-            repositoryName = JOptionPane.showInputDialog("Introduce nombre del nuevo repositorio");
             GitHub github = GitHub.connect();
             GHCreateRepositoryBuilder builder;
-            builder = github.createRepository(repositoryName);
+            builder = github.createRepository(nombre);
             builder.create();
         } catch (IOException ex) {
-            Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error:" + ex);
         }
     }
 
     /**
      * Método que permite clonar un repositorio.
      *
-     * @throws IOException Excepcion que puede ser lanzada.
-     * @throws org.eclipse.jgit.api.errors.GitAPIException
+     * @param uri Dirección url del repositorio remoto que se quiere clonar.
+     * @param repositoryName Nombre que se le dará al nuevo repositorio.
      */
-    public void cloneRepository() throws IOException, GitAPIException {
-        // Se pide por texto el nombre del repositorio y la dirección del remoto.
-        repositoryName = JOptionPane.showInputDialog("Introduce nombre del nuevo repositorio");
-        remotePath = JOptionPane.showInputDialog("Introduce dirección del repositorio en github");
+    public void cloneRepository(String uri, String repositoryName) {
         try {
             Git.cloneRepository()
-                    .setURI(remotePath)
-                    .setDirectory(new File(localPath + "/.git"))
-                    .setCloneAllBranches(true)
+                    .setURI(uri)
+                    .setDirectory(new File("C:\\Users\\Hansen\\Documents\\NetBeansProjects\\" + repositoryName))
                     .call();
         } catch (GitAPIException ex) {
             Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
@@ -97,65 +62,65 @@ public class MetodosGitHub {
     }
 
     /**
-     * Método que permite inicializar un repositorio.
-     */
-    public void iniRepo() {
-        localPath = JOptionPane.showInputDialog("Introduce dirección del repositorio de Netbeans");
-        InitCommand ini = new InitCommand();
-        ini.setDirectory(new File(localPath + "/.git"));
-    }
-
-    /**
      * Método con el que se puede realizar commits en los repositorios.
      *
-     * @throws org.eclipse.jgit.api.errors.GitAPIException
+     * @param localPath Ruta del directorio local en la carpeta
+     * NetBeansProyects.
+     * @param commitMessage Mensaje que aparece en el commit.
      */
-    public void commit() throws GitAPIException {
+    public void commit(String localPath, String commitMessage) {
         try {
-            localPath = JOptionPane.showInputDialog("Introduce dirección del repositorio de Netbeans");
-            localPath = localPath + "/.git";
-            remotePath = JOptionPane.showInputDialog("Introduce dirección del repositorio en github");
-            commitmensaje = JOptionPane.showInputDialog("Introduce mensaje ha mostrar como commit");
             FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
-            Repository repository = repositoryBuilder.setGitDir(new File(localPath))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
+            Repository repository = repositoryBuilder.setGitDir(new File(localPath + "\\.git"))
+                    .readEnvironment()
+                    .findGitDir()
                     .setMustExist(true)
                     .build();
-            git = new Git(localRepo);
+
+            Git git = new Git(repository);
             AddCommand add = git.add();
-            add.addFilepattern(localPath);
-            add.call();
+            add.addFilepattern(localPath).call();
             CommitCommand commit = git.commit();
-            commit.setMessage(commitmensaje);
-            commit.call();
+            commit.setMessage(commitMessage).call();
         } catch (IOException ex) {
-            Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error:" + ex);
+        } catch (GitAPIException ex) {
+            System.out.println("Error:" + ex);
         }
     }
 
     /**
      * Metodo que permite realizar push de los commits realizados.
      *
-     * @throws URISyntaxException
-     * @throws GitAPIException
+     * @param uri Dirección url del directorio remoto sobre el cual se quiere
+     * hacer el push.
+     * @param repositoryName Ruta local del repositorio en la carpeta
+     * NetBeansProyects.
+     * @param user Credencial del usuario de GitHub.
+     * @param password Credencial de la contraseña del usuario.
      */
-    public void push() throws URISyntaxException, GitAPIException {
+    public void push(String uri, String repositoryName, String user, String password) {
         try {
-            localRepo = new FileRepository(localPath);
-            git = new Git(localRepo);
-            String pathRepo = JOptionPane.showInputDialog("Introduce la dirección del repositorio:");
-            // Add repositorio remoto:
+            FileRepositoryBuilder repositoryBuilder = new FileRepositoryBuilder();
+            Repository repository = repositoryBuilder.setGitDir(new File(repositoryName + "\\.git"))
+                    .readEnvironment()
+                    .findGitDir()
+                    .setMustExist(true)
+                    .build();
+            Git git = new Git(repository);
             RemoteAddCommand remoteAddCommand = git.remoteAdd();
             remoteAddCommand.setName("origin");
-            remoteAddCommand.setUri(new URIish(pathRepo));
+            remoteAddCommand.setUri(new URIish(uri));
             remoteAddCommand.call();
-            // Se hace el push al remoto:
             PushCommand pushCommand = git.push();
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(name, password));
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, password));
             pushCommand.call();
         } catch (IOException ex) {
-            Logger.getLogger(MetodosGitHub.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Error: " + ex);
+        } catch (URISyntaxException ex2) {
+            System.out.println("Error: " + ex2);
+        } catch (GitAPIException ex3) {
+            System.out.println("Error: " + ex3);
         }
     }
 }
